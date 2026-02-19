@@ -1,3 +1,4 @@
+import sys
 from products import Product
 from store import Store
 
@@ -10,22 +11,83 @@ best_buy = Store(product_list)
 
 def show_menu():
     print("""
+-----------------------------
+‡         Store Menu        ‡
+-----------------------------
 1. List all products in store
 2. Show total amount in store
 3. Make an order
 4. Quit
     """)
 
+
+def list_products(store: Store):
+    print("-----------------------")
+    for index, product in enumerate(store.get_all_products()):
+        print(index + 1, end=". ")
+        product.show()
+    print("-----------------------")
+
+
+def show_total_amount_in_store(store: Store):
+    total = store.get_total_quantity()
+    print()
+    print(f"Total of {total} items in store")
+
+
+def get_order(store: Store):
+    order = {}
+    while True:
+        print("When you want to finish order, enter empty text.")
+        product_number = input("Which product # do you want? ").strip()
+        product_quantity = input("What amount do you want? ").strip()
+        if product_number == "" or product_quantity == "":
+            break
+
+        try:
+            chosen_product = int(product_number)
+            if chosen_product not in range(1, len(store.get_all_products()) + 1):
+                print("product not found.")
+                continue
+
+            chosen_quantity = int(product_quantity)
+        except ValueError:
+            print("Please enter a valid number.")
+            continue
+
+        product_object = store.get_all_products()[chosen_product - 1]
+        order[product_object] = order.get(product_object, 0) + chosen_quantity
+    return order
+
+
+def make_order(store: Store):
+    list_products(store)
+    user_order = get_order(store)
+    total_amount = 0
+    if not user_order:
+        print("No order made!")
+        return
+    for product, quantity in user_order.items():
+        price = product.buy(quantity)
+        total_amount += price
+
+    print(f"Order made! Total payment: ${total_amount}")
+
+
 def start(store:Store):
     while True:
         show_menu()
-        user_input = input("Press choose a number")
+        user_input = input("Press choose a number: ").strip()
         if user_input in ["1", "2", "3", "4"]:
-            break
 
-    for product in store.get_all_products():
-        product.show()
-
+            if user_input == "1":
+                list_products(store)
+            elif user_input == "2":
+                show_total_amount_in_store(store)
+            elif user_input == "3":
+                make_order(store)
+            else:
+                sys.exit()
 
 
 def main():
